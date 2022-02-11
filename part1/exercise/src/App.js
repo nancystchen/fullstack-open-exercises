@@ -1,63 +1,80 @@
-const App = () => {
-  const course = {
-    name: 'Half Stack application development',
-    parts: [
-      {
-        name: 'Fundamentals of React',
-        exercises: 10,
-      },
-      {
-        name: 'Using props to pass data',
-        exercises: 7,
-      },
-      {
-        name: 'State of a component',
-        exercises: 14,
-      },
-    ],
+import react, {useState} from 'react'
+
+const App = (props) => {
+  const [good, addToGood] = useState(0)
+  const [bad, addToBad] = useState(0)
+  const [neutral, addToNeutral] = useState(0)
+
+  const handleClick = (hook, val) => {
+    return () => hook(val +1)
   }
-  return (
-    <div className="App">
-      <Header course={course}/>
-      <Content 
-        parts={course.parts}
+
+  return(
+    <div>
+      <Header />
+      <Button 
+        onClick={handleClick(addToGood, good)}
+        text="Good"
+      /> 
+      <Button 
+        onClick={handleClick(addToBad, bad)}
+        text="Bad" 
+      /> 
+      <Button 
+        onClick={handleClick(addToNeutral, neutral)}
+        text="Neutral" 
+      /> 
+      <h3> Statistics </h3> 
+      <Stats 
+        stats={[good,bad,neutral]}
       />
-      <Total 
-        parts={course.parts}
-        />
     </div>
-  );
-}
-
-const Header = (props) => {
-  return (
-    <h1>{props.course.name}</h1>
   )
 }
 
-const Part = (props) => {
+const Header = () => {
   return (
-    <p> {props.name}, {props.exercises}</p>
+    <h1> UniCafe Satifaction Survey </h1>
   )
 }
 
-const Content = (p) => {
-  const [part1, part2, part3] = p.parts
+const Button = ({text,onClick}) => {
   return (
-    <>
-      <Part name={part1.name} exercises={part1.exercises} />
-      <Part name={part2.name} exercises={part2.exercises} />
-      <Part name={part3.name} exercises={part3.exercises} />
-    </>
+    <button onClick={onClick}>{text}</button>
   )
 }
 
-const Total = (props) => {
-  const [p1, p2, p3] = props.parts
+const Stats = (props) => {
+  const [good, bad, neutral] = props.stats
+  if (good === 0 && bad === 0 && neutral === 0) {
+    return (
+      <>
+        <p> No feedback statistics to display </p>
+      </>
+    )
+  } else {
+    const all = good + neutral + bad
+    const positiveRate = (100 * good/all).toFixed(2)
+    const avg = (good - bad)/all
+    return (
+      <table>
+          <StatLine text="good" value={good} />
+          <StatLine text="bad" value={bad} />
+          <StatLine text="neutral" value={neutral} />
+          <StatLine text="all" value={all} />
+          <StatLine text="average" value={avg.toFixed(2)} />
+          <StatLine text="positive" value={`${positiveRate}%`} />
+      </table>
+    )
+  }
+}
+
+const StatLine = ({text, value}) => {
   return (
-    <>
-      <p> Number of exercises {p1.exercises + p2.exercises + p3.exercises} </p>
-    </>
+    <tr>
+      <td> {text} </td>
+      <td> {value}</td>
+    </tr>
   )
 }
 

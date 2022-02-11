@@ -1,38 +1,59 @@
 import React, {useState} from 'react';
 
 const App = (props) => {
-  const [ counter, setCounter ] = useState(0)
-  const name = 'Peter';
-  const age = 30;
-  const increment_counter = () => setCounter(counter + 1)
-  const decrement_counter = () => setCounter(counter - 1)
-  const reset_counter = () => setCounter(0)
+  const [ left, setLeft ] = useState(0)
+  const [ right, setRight ] = useState(0)
+  const [ allClicks, setAll ] = useState([])
+
+  const handleLeftClick = () => {
+    setAll(allClicks.concat('L'))
+    setLeft(left + 1)
+  }
+
+  const handleRightClick = () => {
+    setAll(allClicks.concat('R'))
+    setRight(right + 1)
+  }
+
+  const resetClicks = () => {
+    setAll([])
+  }
+
+  const logName = (name) => {
+    return () => console.log("hello", name)
+  }
+  
   return (
     <>
-      <h1>Greetings</h1>
-      <Display counter={counter} />
-      <Hello name="Gregor" age={11+22}/>
-      <Hello name={name} age={age}/>
       <Button 
-        onClick={increment_counter}
-        text="increase count" 
+        onClick={handleLeftClick}
+        text="L" 
       />
       <Button 
-        onClick={decrement_counter}
-        text="decrease count"
+        onClick={handleRightClick}
+        text="R"
       />
-      <Button 
-        onClick={reset_counter} 
-        text="reset count"
-      />
+      <Button
+          onClick={resetClicks}
+          text="Reset clicks"
+     />
+      <Button onClick={logName("Alek")} text="BF"/>
+      <Button onClick={logName("Nancy")} text="GF"/>
+      <History allClicks={allClicks} />
     </>
   );
 }
 
-const Display = ({counter}) => {
-  return(
-    <div> {counter} </div>
-  )
+const History = (props) => {
+  if (props.allClicks.length === 0) {
+    return (
+      <div> This app is used by pressing buttons</div>
+    )
+  } else {
+    return (
+      <div> History: {props.allClicks} </div>
+    )
+  }
 }
 
 const Button = ({onClick, text}) => {
@@ -41,14 +62,6 @@ const Button = ({onClick, text}) => {
       {text}
     </button>
   )
-}
-
-const Hello = ({name, age}) => {
-  return (
-    <div>
-      <p>Hello {name} {age}</p>
-    </div>
-  );
 }
 
 export default App;

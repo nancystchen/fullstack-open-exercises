@@ -1,12 +1,14 @@
 import {useEffect, useState} from 'react';
 import axios from 'axios';
 
-import Countries from './components/Countries';
 import Filter from './components/Filter';
+import Countries from './components/Countries';
+import Country from './components/Country';
 
 const App = () => {
   const [filter, setFilter] = useState('');
   const [countries, setCountries] = useState([]); 
+  const [country, setCountry] = useState({});
 
   const getData = () => {
     axios
@@ -19,19 +21,22 @@ const App = () => {
 
   const handleFilterOnChange = (event) => {
     setFilter(event.target.value)
+    setCountry({})
   }
 
   useEffect(getData, [])
 
   const filteredCountries = (countries) => {
-    if (countries.length > 0) {
-      return countries.filter(c => 
-        c.name
-        .toLowerCase()
-        .includes(filter.toLowerCase())
-      )
-    } else {
-      return []
+    return countries.filter(c => 
+      c.name
+      .toLowerCase()
+      .includes(filter.toLowerCase())
+    )
+  }
+
+  const handleCountryUpdate = (c) => {
+    return () => {
+      setCountry(c)
     }
   }
 
@@ -41,7 +46,13 @@ const App = () => {
         input={filter} 
         handleOnChange={handleFilterOnChange}
       />
-      <Countries countries={filteredCountries(countries)} />
+      <Countries 
+        countries={filteredCountries(countries)}
+        country={country}
+        handleOnClick={handleCountryUpdate} 
+        setCountry={setCountry}
+      />
+      <Country country={country} />
     </div>
   );
 }

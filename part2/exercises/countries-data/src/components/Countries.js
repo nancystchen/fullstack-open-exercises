@@ -1,28 +1,34 @@
-import Country from './Country'
-
-const Countries = ({countries}) => {
+const Countries = ({countries, country, handleOnClick, setCountry}) => {
   const count = countries.length
-  if (count === 0) {
-    return (
-      <div> No countries to display </div>
-    )
+  if (count < 2 || country.name) {
+    if (count === 1) {
+      setCountry(countries[0])
+    } else if (country.name) {
+      return (
+        <></>
+      )
+    } else {
+      return(
+        <div> No countries matched </div>
+      )
+    }
   } else if (count > 10) {
     return (
       <div> Too many countries to display. Narrow down the countries using the filter </div>
     )
-  } else if (count > 1) {
+  } else {
     return (
       <ul>
         {countries.map(c =>
-          <li key={c.name}> {c.name} </li>
+          <p key={c.name}>
+            <label> {c.name} 
+              <button onClick={handleOnClick(c)}> show </button>
+            </label>
+          </p>
         )}
       </ul>
     )
-  } else {
-    return (
-      <Country country={countries[0]} />
-    ) 
-  }
+  } 
 }
 
 export default Countries

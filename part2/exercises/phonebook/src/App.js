@@ -1,48 +1,100 @@
 import {useState, useEffect} from 'react';
-import axios from 'axios';
 
 import Filter from './components/Filter';
 import Person from './components/Person';
 import PersonForm from './components/PersonForm';
 
+import personsService from './services/persons';
+
+const defaultPerson = {
+  name: '',
+  number: '',
+  id: ''
+}
+
 const App = () => {
   const [persons, setPersons] = useState([]) 
   const [filter, setFilter] = useState('')
-  const [newPerson, setNewPerson] = useState({
-    name: '',
-    number: ''
-  })
+  const [newPerson, setNewPerson] = useState(defaultPerson)
+  const [existingContact, setExistingContact] = useState(false)
 
   const getPersons = () => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => 
-        setPersons(response.data)
+    personsService
+      .get()
+      .then(persons => 
+        setPersons(persons)
       )
+  }
+
+  const deletePerson = (person) => {
+    return () => {
+      if (window.confirm(`Delete ${person.name} ?`)) {
+        const id = person.id
+        personsService
+          .del(id)
+          .then(response =>
+            setPersons(
+              persons.filter(p => p.id !== id)
+            )
+          )
+      }
+    }
   }
 
   useEffect(getPersons, [])
   
   const addNewPerson = (event) => {
     event.preventDefault()
-    if (persons.map(p => p.name).find(name => name === newPerson.name)) {
-      window.alert(`${newPerson.name} already exists in the phone book.`)
+    if (existingContact) {
+      if (window.confirm(`Replace ${newPerson.name}'s contacts?`)) {
+        personsService
+          .put(newPerson.id, newPerson)
+          .then(person =>
+            setPersons(persons
+              .map(p => 
+                p.name === person.name
+                ? person
+                : p
+              ))
+            )
+        setNewPerson(defaultPerson)
+        setExistingContact(false)
+      }
     } else if (newPerson.name === '') {
       window.alert("Contact name cannot be empty.")
     } else {
-      setPersons(persons.concat(newPerson))
-      setNewPerson({
-        name: '',
-        number: '',
-      })
+      personsService
+        .post(newPerson) 
+        .then(data => {
+          setPersons(persons.concat(newPerson))
+          setNewPerson(defaultPerson)
+        })
+      setExistingContact(false)
     } 
   }
+
   const handleFilterUpdate = (event) => {
     setFilter(event.target.value)
   }
   
   const handleNameUpdate = (event) => {
-    setNewPerson({...newPerson, name: event.target.value})
+    const name = event.target.value
+    const existingPerson = persons.find(p => p.name === name) 
+    if (existingPerson) {
+      setNewPerson({
+        ...newPerson,
+        name: name,
+        id: existingPerson.id,
+      })
+      setExistingContact(true)
+    } else {
+      const maxId = Math.max(...persons.map(p => p.id))
+      setNewPerson({
+        ...newPerson,
+        name: name,
+        id: maxId + 1,
+      })
+    }
   }
   
   const handleNumberUpdate = (event) => {
@@ -71,7 +123,7 @@ const App = () => {
         />
       <h3> Contacts </h3>
         {personsToShow().map(p => 
-          <Person person={p} key={p.name} />
+          <Person person={p} key={p.id} handleOnClick={deletePerson(p)}/>
         )}
     </div>
   );

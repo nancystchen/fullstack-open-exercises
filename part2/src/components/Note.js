@@ -4,10 +4,10 @@ const Note = ({note, toggleImportanceOf}) => {
     : "mark important"
 
   return (
-    <>
-      <li>{note.content}</li>
+    <li className='note'>
+      {note.content}
       <button onClick={toggleImportanceOf(note.id)}>{label}</button>
-    </>
+    </li>
   );
 }
 

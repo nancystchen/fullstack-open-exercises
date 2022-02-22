@@ -3,6 +3,7 @@ import {useState, useEffect} from 'react';
 import Filter from './components/Filter';
 import Person from './components/Person';
 import PersonForm from './components/PersonForm';
+import Notification from './components/Notification';
 
 import personsService from './services/persons';
 
@@ -17,6 +18,7 @@ const App = () => {
   const [filter, setFilter] = useState('')
   const [newPerson, setNewPerson] = useState(defaultPerson)
   const [existingContact, setExistingContact] = useState(false)
+  const [message, setMessage] = useState(null)
 
   const getPersons = () => {
     personsService
@@ -37,11 +39,20 @@ const App = () => {
               persons.filter(p => p.id !== id)
             )
           )
+          .catch(err => {
+            notify(`Information of ${person.name} has already been removed from server.`)
+          })
       }
     }
   }
 
   useEffect(getPersons, [])
+
+  const notify = (msg) => {
+    console.log(msg)
+    setMessage(msg)
+    setTimeout(() => {setMessage(null)}, 5000)
+  }
   
   const addNewPerson = (event) => {
     event.preventDefault()
@@ -49,14 +60,19 @@ const App = () => {
       if (window.confirm(`Replace ${newPerson.name}'s contacts?`)) {
         personsService
           .put(newPerson.id, newPerson)
-          .then(person =>
+          .then(person => {
             setPersons(persons
               .map(p => 
                 p.name === person.name
                 ? person
                 : p
               ))
-            )
+            notify(`Updated ${person.name}`)
+          })
+          .catch(err => {
+            console.log(err)
+            notify(`Information of ${newPerson.name} has already been removed from server.`)
+          })
         setNewPerson(defaultPerson)
         setExistingContact(false)
       }
@@ -68,6 +84,7 @@ const App = () => {
         .then(data => {
           setPersons(persons.concat(newPerson))
           setNewPerson(defaultPerson)
+          notify(`Added ${newPerson.name}`)
         })
       setExistingContact(false)
     } 
@@ -113,6 +130,7 @@ const App = () => {
   return (
     <div>
       <h2> Phonebook </h2>
+        <Notification message={message}/>
         <Filter value={filter} onChange={handleFilterUpdate} />
       <h3> Add a new </h3>
         <PersonForm 
